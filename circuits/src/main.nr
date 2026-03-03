@@ -1,16 +1,12 @@
 use ::poseidon::poseidon;
 
-global DEPTH: u32 = 20;
-global MAX_BALANCE_BITS: u32 = 64;
-global FIELD_BITS: u32 = 254;
-
-fn main(
+fn assert_inclusion<let DEPTH: u32, let MAX_BALANCE_BITS: u32, let FIELD_BITS: u32>(
     path_indices: [u1; DEPTH],
     sibling_hashes: [Field; DEPTH],
     sibling_balances: [Field; DEPTH],
-    root_hash: pub Field,
-    root_balance: pub Field,
-    leaf_hash: pub Field,
+    root_hash: Field,
+    root_balance: Field,
+    leaf_hash: Field,
     leaf_balance: Field,
 ) {
     assert_constant(MAX_BALANCE_BITS + 1 < FIELD_BITS);
@@ -31,4 +27,28 @@ fn main(
     }
     assert_eq(node, root_hash);
     assert_eq(balance, root_balance);
+}
+
+global DEPTH: u32 = 20;
+global MAX_BALANCE_BITS: u32 = 64;
+global FIELD_BITS: u32 = 254;
+
+fn main(
+    path_indices: [u1; DEPTH],
+    sibling_hashes: [Field; DEPTH],
+    sibling_balances: [Field; DEPTH],
+    root_hash: pub Field,
+    root_balance: pub Field,
+    leaf_hash: pub Field,
+    leaf_balance: Field,
+) {
+    assert_inclusion::<_, MAX_BALANCE_BITS, FIELD_BITS>(
+        path_indices,
+        sibling_hashes,
+        sibling_balances,
+        root_hash,
+        root_balance,
+        leaf_hash,
+        leaf_balance,
+    );
 }
