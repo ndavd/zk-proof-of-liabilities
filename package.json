@@ -1,0 +1,12 @@
+{
+  "name": "zk-proof-of-liabilities",
+  "workspaces": [
+    "web"
+  ],
+  "scripts": {
+    "dev": "bun run --filter web dev",
+    "build": "bun run --filter web build",
+    "lint": "bun run --filter web lint",
+    "preview": "bun run --filter web preview"
+  }
+}
