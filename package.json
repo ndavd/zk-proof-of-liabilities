@@ -1,12 +1,15 @@
 {
   "name": "zk-proof-of-liabilities",
   "workspaces": [
-    "web"
+    "web",
+    "sdk",
+    "scripts"
   ],
   "scripts": {
     "dev": "bun run --filter web dev",
     "build": "bun run --filter web build",
     "lint": "bun run --filter web lint",
-    "preview": "bun run --filter web preview"
+    "preview": "bun run --filter web preview",
+    "generate-prover-toml": "bun run scripts/generate-prover-toml"
   }
 }
