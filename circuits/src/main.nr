@@ -1,4 +1,4 @@
-use ::poseidon::poseidon;
+use ::poseidon::poseidon2;
 
 trait MerkleSumTreeHasher {
     fn hash_node(
@@ -46,15 +46,15 @@ where
 global DEPTH: u32 = 20;
 global MAX_BALANCE_BITS: u32 = 128;
 
-struct PoseidonBn254Hasher;
-impl MerkleSumTreeHasher for PoseidonBn254Hasher {
+struct PoseidonHasher;
+impl MerkleSumTreeHasher for PoseidonHasher {
     fn hash_node(
         balance_left: Field,
         hash_left: Field,
         balance_right: Field,
         hash_right: Field,
     ) -> Field {
-        poseidon::bn254::hash_4([balance_left, hash_left, balance_right, hash_right])
+        poseidon2::Poseidon2::hash([balance_left, hash_left, balance_right, hash_right], 4)
     }
 }
 
@@ -67,7 +67,7 @@ fn main(
     leaf_hash: pub Field,
     leaf_balance: Field,
 ) {
-    assert_inclusion::<_, MAX_BALANCE_BITS, 254, PoseidonBn254Hasher>(
+    assert_inclusion::<_, MAX_BALANCE_BITS, 254, PoseidonHasher>(
         path_indices,
         sibling_hashes,
         sibling_balances,
