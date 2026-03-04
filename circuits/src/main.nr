@@ -7,6 +7,8 @@ trait MerkleSumTreeHasher {
         balance_right: Field,
         hash_right: Field,
     ) -> Field;
+
+    fn hash_leaf(id: Field, balance: Field) -> Field;
 }
 
 fn assert_inclusion<let DEPTH: u32, let MAX_BALANCE_BITS: u32, let FIELD_BITS: u32, H>(
@@ -17,13 +19,17 @@ fn assert_inclusion<let DEPTH: u32, let MAX_BALANCE_BITS: u32, let FIELD_BITS: u
     root_balance: Field,
     leaf_hash: Field,
     leaf_balance: Field,
+    leaf_id: Field,
 )
 where
     H: MerkleSumTreeHasher,
 {
     assert_constant(MAX_BALANCE_BITS + 1 < FIELD_BITS);
 
+    assert_eq(leaf_hash, H::hash_leaf(leaf_id, leaf_balance));
+
     let mut node = leaf_hash;
+
     let mut balance = leaf_balance;
     balance.assert_max_bit_size::<MAX_BALANCE_BITS>();
 
@@ -56,6 +62,10 @@ impl MerkleSumTreeHasher for PoseidonHasher {
     ) -> Field {
         poseidon2::Poseidon2::hash([balance_left, hash_left, balance_right, hash_right], 4)
     }
+
+    fn hash_leaf(id: Field, balance: Field) -> Field {
+        poseidon2::Poseidon2::hash([id, balance], 2)
+    }
 }
 
 fn main(
@@ -66,6 +76,7 @@ fn main(
     root_balance: pub Field,
     leaf_hash: pub Field,
     leaf_balance: Field,
+    leaf_id: Field,
 ) {
     assert_inclusion::<_, MAX_BALANCE_BITS, 254, PoseidonHasher>(
         path_indices,
@@ -75,5 +86,6 @@ fn main(
         root_balance,
         leaf_hash,
         leaf_balance,
+        leaf_id,
     );
 }
