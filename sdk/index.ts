@@ -25,8 +25,9 @@ export const hashStringToField = (
   return poseidon2Hash(fields);
 };
 
-export interface Leaf {
-  id: string;
+export interface UserData {
+  username: string;
+  nonce: number | string;
   balance: bigint;
 }
 
@@ -35,14 +36,18 @@ export interface Node {
   balance: bigint;
 }
 
-const hashLeaf = (leaf: Leaf): Node => {
-  const idField = hashStringToField(leaf.id, 31);
-  if (idField == null) {
-    throw Error("Leaf has invalid id");
+export const userDataToUserId = (user: UserData): bigint => {
+  const userId = hashStringToField(`${user.username}${user.nonce}`, 31);
+  if (userId == null) {
+    throw Error(`User has invalid user id: ${user.username}${user.nonce}`);
   }
+  return userId;
+};
+
+export const hashUser = (user: UserData): Node => {
   return {
-    hash: poseidon2Hash([idField, leaf.balance]),
-    balance: leaf.balance,
+    hash: poseidon2Hash([userDataToUserId(user), user.balance]),
+    balance: user.balance,
   };
 };
 
@@ -51,10 +56,13 @@ const EMPTY_LEAF: Node = {
   balance: BigInt(0),
 };
 
-export const buildMerkleSumTree = (leaves: Leaf[], depth: number): Node[][] => {
+export const buildMerkleSumTree = (
+  users: UserData[],
+  depth: number,
+): Node[][] => {
   const capacity = 2 ** depth;
-  if (leaves.length > capacity) {
-    throw Error(`Too many leaves for depth ${depth}`);
+  if (users.length > capacity) {
+    throw Error(`Too many users for depth ${depth}`);
   }
 
   const EMPTY_NODES: Node[] = [EMPTY_LEAF];
@@ -73,8 +81,8 @@ export const buildMerkleSumTree = (leaves: Leaf[], depth: number): Node[][] => {
 
   const levels = [
     [
-      ...leaves.map(hashLeaf),
-      ...Array(capacity - leaves.length).fill(EMPTY_LEAF),
+      ...users.map(hashUser),
+      ...Array(capacity - users.length).fill(EMPTY_LEAF),
     ],
   ];
 

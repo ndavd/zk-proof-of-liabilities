@@ -26,9 +26,9 @@ fn main(
     sibling_balances: [Field; DEPTH],
     root_hash: pub Field,
     root_balance: pub Field,
-    leaf_hash: pub Field,
-    leaf_balance: Field,
-    leaf_id: Field,
+    user_hash: pub Field,
+    user_balance: Field,
+    user_id: Field,
 ) {
     assert_inclusion::<_, MAX_BALANCE_BITS, 254, PoseidonHasher>(
         path_indices,
@@ -36,8 +36,8 @@ fn main(
         sibling_balances,
         root_hash,
         root_balance,
-        leaf_hash,
-        leaf_balance,
-        leaf_id,
+        user_hash,
+        user_balance,
+        user_id,
     );
 }

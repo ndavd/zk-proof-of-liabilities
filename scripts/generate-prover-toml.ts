@@ -5,16 +5,17 @@ import {
   buildMerkleSumTree,
   buildMerkleSumTreeProof,
   getMerkleSumTreeRoot,
-  hashStringToField,
+  hashUser,
+  userDataToUserId,
   type Node,
 } from "sdk";
 
 const csvPathArg = process.argv[2];
-const provingId = process.argv[3];
+const provingUsername = process.argv[3];
 
-if (!csvPathArg || !provingId) {
+if (!csvPathArg || !provingUsername) {
   console.log(
-    `Usage: bun run generate-prover-toml <path-to-user-data.csv> <proving-user-id>\nExample: bun run generate-prover-toml ./scripts/users-example-data.csv Alice`,
+    `Usage: bun run generate-prover-toml <path-to-user-data.csv> <proving-username>\nExample: bun run generate-prover-toml ./scripts/users-example-data.csv Alice`,
   );
   process.exit(0);
 }
@@ -47,7 +48,8 @@ if (csvResult.errors.length > 0) {
 
 const usersDataZodSchema = z
   .object({
-    id: z.string().nonempty(),
+    username: z.string().nonempty(),
+    nonce: z.union([z.string(), z.number().nonnegative()]),
     balance: z.coerce.bigint(),
   })
   .array()
@@ -62,22 +64,24 @@ if (parsedDataResult.error) {
 
 const usersData = parsedDataResult.data;
 
-const provingUserIdIndex = usersData.findIndex(({ id }) => id == provingId);
+const provingUserIndex = usersData.findIndex(
+  ({ username }) => username == provingUsername,
+);
 
-if (provingUserIdIndex == -1) {
-  console.error(`User with id ${provingId} not found`);
+if (provingUserIndex == -1) {
+  console.error(`User with username ${provingUsername} not found`);
   process.exit(1);
 }
 
 const t = buildMerkleSumTree(usersData, 20);
-const p = buildMerkleSumTreeProof(t, provingUserIdIndex);
+const p = buildMerkleSumTreeProof(t, provingUserIndex);
 const root = getMerkleSumTreeRoot(t);
 
 const toProverToml = (
   proof: ReturnType<typeof buildMerkleSumTreeProof>,
   root: Node,
-  leaf: Node,
-  leafId: bigint,
+  user: Node,
+  userId: bigint,
 ): string => {
   const arr = (values: (string | number)[]) => `[${values.join(", ")}]`;
 
@@ -87,9 +91,9 @@ const toProverToml = (
     `sibling_balances = ${arr(proof.siblings.map((s) => `"${s.balance.toString()}"`))}`,
     `root_hash = "0x${root.hash.toString(16)}"`,
     `root_balance = "${root.balance.toString()}"`,
-    `leaf_hash = "0x${leaf.hash.toString(16)}"`,
-    `leaf_balance = "${leaf.balance.toString()}"`,
-    `leaf_id = "0x${leafId.toString(16)}"`,
+    `user_hash = "0x${user.hash.toString(16)}"`,
+    `user_balance = "${user.balance.toString()}"`,
+    `user_id = "0x${userId.toString(16)}"`,
   ].join("\n");
 };
 
@@ -97,7 +101,7 @@ console.log(
   toProverToml(
     p,
     root,
-    t[0]![provingUserIdIndex]!,
-    hashStringToField(provingId, 31)!,
+    t[0]![provingUserIndex]!,
+    userDataToUserId(usersData![provingUserIndex]!),
   ),
 );
