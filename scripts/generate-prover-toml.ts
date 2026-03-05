@@ -5,7 +5,6 @@ import {
   buildMerkleSumTree,
   buildMerkleSumTreeProof,
   getMerkleSumTreeRoot,
-  hashUser,
   userDataToUserId,
   type Node,
 } from "sdk";
@@ -15,7 +14,7 @@ const provingUsername = process.argv[3];
 
 if (!csvPathArg || !provingUsername) {
   console.log(
-    `Usage: bun run generate-prover-toml <path-to-user-data.csv> <proving-username>\nExample: bun run generate-prover-toml ./scripts/users-example-data.csv Alice`,
+    `Usage: bun run generate-prover-toml <path-to-user-data.csv> <proving-username>\nExample: bun run generate-prover-toml ./mock-data/users.csv Alice`,
   );
   process.exit(0);
 }
