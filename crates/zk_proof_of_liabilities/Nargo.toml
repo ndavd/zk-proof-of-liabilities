@@ -4,4 +4,5 @@ type = "bin"
 authors = ["Nuno David <email@ndavd.com>"]
 
 [dependencies]
+merkle_sum_tree = { path = "../merkle_sum_tree" }
 poseidon = { tag = "v0.2.6", git = "https://github.com/noir-lang/poseidon" }

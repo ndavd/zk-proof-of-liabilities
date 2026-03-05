@@ -1,0 +1,3 @@
+[workspace]
+members = ["crates/merkle_sum_tree", "crates/zk_proof_of_liabilities"]
+default-member = "crates/zk_proof_of_liabilities"

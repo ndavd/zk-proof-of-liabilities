@@ -1,0 +1,6 @@
+[package]
+name = "merkle_sum_tree"
+type = "lib"
+authors = ["Nuno David <email@ndavd.com>"]
+
+[dependencies]
