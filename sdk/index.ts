@@ -1,10 +1,29 @@
 import { poseidon2Hash } from "@zkpassport/poseidon2";
-import utils from "./utils";
 
-const BIT_SIZE = 254;
-
-export const stringToField = (input: string) =>
-  utils.stringToField(input, BIT_SIZE);
+/**
+ * Encodes a UTF-8 string into a field element for use in ZK circuits.
+ * Splits the string into chunks of `chunkSize` bytes, packs each chunk
+ * into a field element little-endian, then hashes them with Poseidon2.
+ * Returns `null` if the input is empty or chunkSize is less than 1.
+ */
+export const hashStringToField = (
+  input: string,
+  chunkSize: number,
+): bigint | null => {
+  const trimmed = input.trim();
+  if (trimmed === "" || chunkSize < 1) return null;
+  const bytes = new TextEncoder().encode(trimmed);
+  const fields: bigint[] = [];
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.slice(i, i + chunkSize);
+    let value = 0n;
+    for (let j = 0; j < chunk.length; j++) {
+      value |= BigInt(chunk[j]!) << BigInt(j * 8);
+    }
+    fields.push(value);
+  }
+  return poseidon2Hash(fields);
+};
 
 export interface Leaf {
   id: string;
@@ -17,7 +36,7 @@ export interface Node {
 }
 
 const hashLeaf = (leaf: Leaf): Node => {
-  const idField = stringToField(leaf.id);
+  const idField = hashStringToField(leaf.id, 31);
   if (idField == null) {
     throw Error("Leaf has invalid id");
   }

@@ -5,7 +5,7 @@ import {
   buildMerkleSumTree,
   buildMerkleSumTreeProof,
   getMerkleSumTreeRoot,
-  stringToField,
+  hashStringToField,
   type Node,
 } from "sdk";
 
@@ -82,17 +82,22 @@ const toProverToml = (
   const arr = (values: (string | number)[]) => `[${values.join(", ")}]`;
 
   return [
-    `path_indices = ${arr(proof.pathIndices)}`,
+    `path_indices = ${arr(proof.pathIndices.map((p) => `"${p}"`))}`,
     `sibling_hashes = ${arr(proof.siblings.map((s) => `"0x${s.hash.toString(16)}"`))}`,
-    `sibling_balances = ${arr(proof.siblings.map((s) => s.balance.toString()))}`,
+    `sibling_balances = ${arr(proof.siblings.map((s) => `"${s.balance.toString()}"`))}`,
     `root_hash = "0x${root.hash.toString(16)}"`,
     `root_balance = "${root.balance.toString()}"`,
     `leaf_hash = "0x${leaf.hash.toString(16)}"`,
     `leaf_balance = "${leaf.balance.toString()}"`,
-    `leaf_id = "${leafId.toString()}"`,
+    `leaf_id = "0x${leafId.toString(16)}"`,
   ].join("\n");
 };
 
 console.log(
-  toProverToml(p, root, t[0]![provingUserIdIndex]!, stringToField(provingId)!),
+  toProverToml(
+    p,
+    root,
+    t[0]![provingUserIdIndex]!,
+    hashStringToField(provingId, 31)!,
+  ),
 );
