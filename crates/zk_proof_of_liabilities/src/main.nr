@@ -243,6 +243,46 @@ fn mock_128overflow_sum_alice_inputs() -> ([u1; DEPTH], [Field; DEPTH], [Field; 
 }
 
 #[test]
+/// Generated using `bun run generate-prover-toml mock-data/users-negative.csv Alice`
+/// Proving Alice but Alice's sibling has a negative balance
+fn mock_negative_alice_sibling_inputs() -> ([u1; DEPTH], [Field; DEPTH], [Field; DEPTH], Field, Field, Field, Field, Field) {
+    let path_indices = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    let sibling_hashes = [
+        0x2480b6d84dd5a31eeebfd4f72582917c7766fe92d343b20fd87d637e9f69f807,
+        0x2ac7cfc12ebe0b3c4e46071cbfa38ec554cae41a17cda696e375fb106e441350,
+        0x23a02adc899fba69db7c7b68df1b427ad562ae8e2f69d3a0a9b865d68d926405,
+        0x208e62e99c5152fc299bb62758183375bfd0000faf06de9a98d02df93eb193ee,
+        0x18b1cb20fe3d032a4fa03aa1b967371ef01a7b0f431786c75ea99214f7c166fa,
+        0xe9db4e78129dfcabd6858a72c24e222c6a252b99bbd0964b6a2c9cd4a0779f6,
+        0x2b127322e8382159dbfd411e3a4a6298ce321e187f7cb9fe9976acb824a4fe68,
+        0x385164f4236335e5257500c10de3daa98cf98fd4cd4daecd013f732f456fbfd,
+        0xd1ba6f2e4131b036481ee82271ac68ca9771257e6c8fb9a456df239533871a2,
+        0x11b0192f04eb1239cb27febed56102d3a17de3c3888e6ba760dc6a4896dcdecd,
+        0x15d0b301af36495436c359c433bae21bc2d1c2d9f3da10d9e12d7f89714630ae,
+        0x10bf7e8f0988d53ccb434776e204512b676fd9aa5f392f24c514744493da7371,
+        0x28d8bcc40f107cfbb86826bb8f9aa8ba27df4b18b4bed3e1a6ce1805a2645be9,
+        0xa605eb730428720b172e62cda5cd27f4243889d6127cd3e5a3de3d4f8b3ef4,
+        0x189f12167057a5ff1ed196bc3a6bea03faa6b34b44cbbbb0584d8b9a20dae678,
+        0xfbf6d8484dbddd276fc102c2b5983e789536a4e029cd77c048ba556260cddc,
+        0x2e53a6cfc3e78a52df692eb9cae2d71e148557cb3e510ac5343ce39c28558f2,
+        0x2281091c138064331a437b57e65d24a7ad059c398c01c6dd52f3f3fea811aee2,
+        0x1c216fda2aba25efb343f94ba888a774b041e1982c0d95f5f06844f82e9003d3,
+        0x1edb9708f3a6965f8520372b9aa3c4da4bb9d93f5dd9bd8f711418f9b5491f0f,
+    ];
+    let sibling_balances =
+        [-6395, 18851, 82821, 162804, 106404, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    let root_hash = 0x396a22601adea6775dd9920533feab43778f10dac413e1115aa23b1b73eb956;
+    let root_balance = 384769;
+    let user_hash = 0x2abca1526ee7d8fb15d69e4a889dfc8677fc5900e2bfdab802c9722f782ac77a;
+    let user_balance = 20284;
+    let user_id = 0x1ec0c7fb4c8e03c9ad47c3bdb7772dd94d1e7b12b6b0ac15a7d7608d5399880f;
+    (
+        path_indices, sibling_hashes, sibling_balances, root_hash, root_balance, user_hash,
+        user_balance, user_id,
+    )
+}
+
+#[test]
 fn test_valid() {
     let (path_indices, sibling_hashes, sibling_balances, root_hash, root_balance, user_hash, user_balance, user_id) =
         mock_valid_alice_inputs();
@@ -414,6 +454,22 @@ fn test_sibling_balance_not_overflow_if_bigger_max_balance_bits() {
 fn test_root_balance_overflow() {
     let (path_indices, sibling_hashes, sibling_balances, root_hash, root_balance, user_hash, user_balance, user_id) =
         mock_128overflow_sum_alice_inputs();
+    main(
+        path_indices,
+        sibling_hashes,
+        sibling_balances,
+        root_hash,
+        root_balance,
+        user_hash,
+        user_balance,
+        user_id,
+    )
+}
+
+#[test(should_fail)]
+fn test_negative_sibling_balance() {
+    let (path_indices, sibling_hashes, sibling_balances, root_hash, root_balance, user_hash, user_balance, user_id) =
+        mock_negative_alice_sibling_inputs();
     main(
         path_indices,
         sibling_hashes,
