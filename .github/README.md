@@ -8,7 +8,7 @@ the other users.
 
 ## Background
 
-How can you trust that a Centralized Exchange actually holds your funds?
+**How can you trust that a Centralized Exchange actually holds your funds?**
 
 The CEX would need to provide a _Proof of Solvency_:
 
@@ -39,7 +39,7 @@ A better solution is to use a _Merkle Sum Tree_. It behaves like a regular
 Merkle tree, but each node also carries a balance equal to the sum of its
 children's balances, with the root representing the total liabilities.
 
-[mst img](./mst.jpg)
+![mst img](./mst.jpg)
 
 However, it's still not private enough: A user, Alice, would still know the
 balance of another user that corresponds to her sibling leaf in the tree, would
@@ -56,7 +56,7 @@ or any other user data is revealed in the process.
 
 For implementation details, read the [Circuit design](#cirtuit-design) section.
 
-[zk-mst img](./zk-mst.jpg)
+![zk-mst img](./zk-mst.jpg)
 
 ## Circuit design
 
