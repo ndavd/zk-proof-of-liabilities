@@ -6,6 +6,11 @@ It allows a company to cryptographically prove to each user that their balance
 is correctly included in its total liabilities without revealing any data from
 the other users.
 
+- [Background][#background]
+- [Circuit design][#circuit-design]
+  - [Limitations][#limitations]
+- [References][#References]
+
 ## Background
 
 **How can you trust that a Centralized Exchange actually holds your funds?**
@@ -100,15 +105,19 @@ The circuit asserts the following constraints:
 - No balance or computed amount exceeds `2^MAX_BALANCE_BITS`, preventing
   overflow and negative value exploits
 
+The circuit uses Noir's native `Field` type for all values rather than fixed
+width integers, since field arithmetic has fewer constraints. The valid range is
+enforced via `MAX_BALANCE_BITS` rather than relying on the type system.
+
+The `Poseidon2` hash was chosen for its efficiency inside circuits due to the
+lower number of constraints compared to general-purpose hashes like Keccak,
+while offering similar security.
+
 Although the circuit doesn't enforce it, it is recommended for the `user_id`
 (also called ID) to be comprised of the hash of not only the username but also a
 random nonce privately shared with the user. This prevents an attack on the
 public input `user_hash`, which could be observed on-chain by the RPCs, where
 one could try to bruteforce `hash[username, balance]` to deanonymize the user.
-
-The circuit uses Noir's native `Field` type for all values rather than fixed
-width integers, since field arithmetic has fewer constraints. The valid range is
-enforced via `MAX_BALANCE_BITS` rather than relying on the type system.
 
 ### Limitations
 
