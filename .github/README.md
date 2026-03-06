@@ -70,7 +70,7 @@ algorithm with the following inputs:
 | `sibling_balances` | _PRIVATE_  | `[Field; DEPTH]` | Balance of each sibling node along the path            |
 | `root_hash`        |  _PUBLIC_  |     `Field`      | The Merkle Sum Tree root hash                          |
 | `root_balance`     |  _PUBLIC_  |     `Field`      | Total liabilities                                      |
-| `user_hash`        |  _PUBLIC_  |     `Field`      | Hash of the user's leaf verified by the user off-chain |
+| `user_hash`        |  _PUBLIC_  |     `Field`      | Hash of the user's leaf verified off-chain by the user |
 | `user_balance`     | _PRIVATE_  |     `Field`      | The user's balance                                     |
 | `user_id`          | _PRIVATE_  |     `Field`      | Hash of the user's username and nonce                  |
 
@@ -83,10 +83,10 @@ The Nargo workspace is comprised 2 crates:
 The customization happens via the following generics:
 
 - `DEPTH: u32`: The Merkle sum tree depth (`zk_proof_of_liabilities` uses `20`,
-  which equates to $2^20 = 1 048 576$ maximum users)
+  which equates to $2^{20} = 1,048,576$ maximum users)
 - `MAX_BALANCE_BITS: u32`: The bit-length of the balances
   (`zk_proof_of_liabilities` uses `128`, which equates to a maximum balance (or
-  sum) of $2^128 - 1 = 340 282 366 920 938 463 463 374 607 431 768 211 455$)
+  sum) of $2^{128} - 1 = 340,282,366,920,938,463,463,374,607,431,768,211,455$)
 - `FIELD_BITS: u32`: The bit-length of the prime field used
   (`zk_proof_of_liabilities` uses `254` to be compatible with the Barretenberg
   backend)
@@ -109,6 +109,8 @@ could be observed on-chain by the RPCs, where one could try to bruteforce
 The circuit uses Noir's native `Field` type for all values rather than fixed
 width integers, since field arithmetic has fewer constraints. The valid range is
 enforced via `MAX_BALANCE_BITS` rather than relying on the type system.
+
+### Limitations
 
 ## References
 
