@@ -9,7 +9,7 @@ the other users.
 - [Background](#background)
 - [Circuit design](#circuit-design)
   - [Limitations](#limitations)
-- [References](#References)
+- [References](#references)
 
 ## Background
 
