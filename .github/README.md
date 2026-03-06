@@ -47,7 +47,7 @@ also know the sum of balances of other two users, and so on and so forth... If
 Alice had access to more accounts she could start to extract more balance
 information.
 
-The solution is to use Zero-Knowledge Proofs where, instead of sharing the
+**The solution is to use Zero-Knowledge Proofs** where, instead of sharing the
 Merkle proof directly with the user, the CEX generates a ZKP of their inclusion
 in the tree. The user can then verify the generated proof against his user hash
 (which is a hash computed with their username, nonce and balance), the committed
@@ -102,15 +102,27 @@ The circuit asserts the following constraints:
 
 Although the circuit doesn't enforce it, it is recommended for the `user_id`
 (also called ID) to be comprised of the hash of not only the username but also a
-random nonce. This prevents an attack on the public input `user_hash`, which
-could be observed on-chain by the RPCs, where one could try to bruteforce
-`hash[username, balance]` to deanonymize the user.
+random nonce privately shared with the user. This prevents an attack on the
+public input `user_hash`, which could be observed on-chain by the RPCs, where
+one could try to bruteforce `hash[username, balance]` to deanonymize the user.
 
 The circuit uses Noir's native `Field` type for all values rather than fixed
 width integers, since field arithmetic has fewer constraints. The valid range is
 enforced via `MAX_BALANCE_BITS` rather than relying on the type system.
 
 ### Limitations
+
+The trade-off is that we're trusting the CEX to generate the Merkle proof
+honestly. The circuit checks for Merkle proof correctness, but the CEX could add
+some fake users with negative balances to decrease the total liabilities.
+
+This is only detectable by users whose sibling nodes contain a manipulated
+balance, since the range constraint would reject a balance that wraps around the
+field modulus. Any other users in the tree would receive valid proofs.
+
+Therefore, the proof relies on a sufficient number of users verifying their
+proofs, which of course cannot be enforced. The more users verify, the harder it
+becomes for the CEX to manipulate the tree without being caught.
 
 ## References
 
