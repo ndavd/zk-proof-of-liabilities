@@ -73,11 +73,11 @@ export function App() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            Read the full documentation on GitHub
+            Learn more about the project on GitHub
             <GithubLogoIcon />
           </a>
         </div>
-        <p className="text-sm mb-1">Click on a user to generate the ZKP.</p>
+        <p className="text-sm mb-1">Click on a user to generate their ZKP.</p>
         <DataTable columns={columns} data={DATA} onRowClick={setSelected} />
       </div>
       <Dialog
