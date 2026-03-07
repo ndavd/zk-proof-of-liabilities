@@ -7,13 +7,13 @@ interface IVerifier {
     function verify(bytes calldata proof, bytes32[] calldata publicInputs) external view returns (bool);
 }
 
-struct Snapshot {
-    bytes32 rootHash;
-    uint128 rootBalance;
-    uint256 timestamp;
-}
-
 contract ProofOfLiabilities is Ownable2Step {
+    struct Snapshot {
+        bytes32 rootHash;
+        uint128 rootBalance;
+        uint256 timestamp;
+    }
+
     mapping(uint256 => Snapshot) public sSnapshots;
     uint256 public sCurrentSnapshot;
 
@@ -50,7 +50,7 @@ contract ProofOfLiabilities is Ownable2Step {
     {
         Snapshot memory snapshot = sSnapshots[sCurrentSnapshot];
         bytes32[] memory publicInputs = _makePublicInputs(snapshot.rootHash, snapshot.rootBalance, userHash);
-        verified = VERIFIER.verify(proof, publicInputs);
+        verified = _tryVerify(proof, publicInputs);
     }
 
     function verifySnapshot(uint256 snapshotId, bytes memory proof, bytes32 userHash)
@@ -61,11 +61,19 @@ contract ProofOfLiabilities is Ownable2Step {
     {
         Snapshot memory snapshot = sSnapshots[snapshotId];
         bytes32[] memory publicInputs = _makePublicInputs(snapshot.rootHash, snapshot.rootBalance, userHash);
-        verified = VERIFIER.verify(proof, publicInputs);
+        verified = _tryVerify(proof, publicInputs);
+    }
+
+    function _tryVerify(bytes memory proof, bytes32[] memory publicInputs) private view returns (bool) {
+        try VERIFIER.verify(proof, publicInputs) returns (bool result) {
+            return result;
+        } catch {
+            return false;
+        }
     }
 
     function _makePublicInputs(bytes32 rootHash, uint128 rootBalance, bytes32 userHash)
-        private
+        internal
         pure
         returns (bytes32[] memory publicInputs)
     {
