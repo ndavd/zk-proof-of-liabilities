@@ -59,7 +59,9 @@ export function App() {
     <>
       <div className="mx-auto container min-h-svh py-6">
         <div className="flex gap-2 flex-col mb-10">
-          <h1 className="text-3xl font-bold">ZK Proof of Liabilities</h1>
+          <h1 className="text-3xl font-bold text-primary-foreground">
+            ZK Proof of Liabilities
+          </h1>
           <p>
             Cryptographically prove to each user that their balance is correctly
             included in the total liabilities without revealing any data from
@@ -71,8 +73,8 @@ export function App() {
             target="_blank"
             rel="noopener noreferrer"
           >
+            Read the full documentation on GitHub
             <GithubLogoIcon />
-            Learn more on GitHub
           </a>
         </div>
         <p className="text-sm mb-1">Click on a user to generate the ZKP.</p>
