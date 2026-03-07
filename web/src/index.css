@@ -133,5 +133,5 @@ a {
 }
 
 a:hover {
-  @apply text-primary;
+  @apply text-primary-foreground;
 }
