@@ -2,3 +2,4 @@
 src = "contracts/src"
 out = "contracts/out"
 libs = ["contracts/lib"]
+test = "contracts/test"
