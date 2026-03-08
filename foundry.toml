@@ -3,6 +3,9 @@ src = "contracts/src"
 out = "contracts/out"
 libs = ["contracts/lib"]
 test = "contracts/test"
+optimizer = true
+optimizer_runs = 100
 
 [rpc_endpoints]
-base_sepolia = "https://sepolia.base.org"
+mainnet = "https://ethereum-rpc.publicnode.com"
+sepolia = "https://ethereum-sepolia-rpc.publicnode.com"
