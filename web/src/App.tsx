@@ -10,7 +10,8 @@ import {
 
 import { type ColumnDef } from "@tanstack/react-table";
 
-import { type UserData } from "sdk";
+import { buildMerkleSumTree, getMerkleSumTreeRoot, type UserData } from "sdk";
+import { CodeValue } from "@/CodeValue";
 
 const columns: ColumnDef<UserData>[] = [
   {
@@ -55,6 +56,9 @@ const DATA: UserData[] = [
 export function App() {
   const [selected, setSelected] = useState<UserData | null>(null);
 
+  const t = buildMerkleSumTree(DATA, 20);
+  const root = getMerkleSumTreeRoot(t);
+
   return (
     <>
       <div className="mx-auto container min-h-svh py-6">
@@ -77,7 +81,16 @@ export function App() {
             <GithubLogoIcon />
           </a>
         </div>
-        <p className="text-sm mb-1">Click on a user to generate their ZKP.</p>
+        <div className="text-sm mb-1">
+          <p>
+            Root hash: <CodeValue>0x{root.hash.toString(16)}</CodeValue>
+          </p>
+          <p>
+            Root balance: <CodeValue>{root.balance.toString()}</CodeValue>
+          </p>
+          <br />
+          <p>Click on a user to generate their ZKP.</p>
+        </div>
         <DataTable columns={columns} data={DATA} onRowClick={setSelected} />
       </div>
       <Dialog
