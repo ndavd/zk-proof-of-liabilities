@@ -1,4 +1,6 @@
+/// A hasher compatible with the Merkle Sum Tree construction.
 pub trait MerkleSumTreeHasher {
+    /// Hashes a node, binding both child balances and hashes.
     fn hash_node(
         balance_left: Field,
         hash_left: Field,
@@ -6,9 +8,11 @@ pub trait MerkleSumTreeHasher {
         hash_right: Field,
     ) -> Field;
 
+    /// Hashes a leaf, binding the user id and balance.
     fn hash_leaf(id: Field, balance: Field) -> Field;
 }
 
+/// Proves that a leaf (`leaf_hash`) is correctly computed and included in a Merkle Sum Tree with the given `root_hash` and `root_balance`.
 pub fn assert_inclusion<let DEPTH: u32, let MAX_BALANCE_BITS: u32, let FIELD_BITS: u32, H>(
     path_indices: [u1; DEPTH],
     sibling_hashes: [Field; DEPTH],

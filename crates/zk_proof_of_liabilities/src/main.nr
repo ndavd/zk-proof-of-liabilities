@@ -6,8 +6,8 @@ global DEPTH: u32 = 20;
 /// The biggest allowed balance is 2^128 - 1 = 340282366920938463463374607431768211455
 global MAX_BALANCE_BITS: u32 = 128;
 
-struct PoseidonHasher;
-impl MerkleSumTreeHasher for PoseidonHasher {
+struct Poseidon2Hasher;
+impl MerkleSumTreeHasher for Poseidon2Hasher {
     fn hash_node(
         balance_left: Field,
         hash_left: Field,
@@ -32,7 +32,7 @@ fn main(
     user_balance: Field,
     user_id: Field,
 ) {
-    assert_inclusion::<_, MAX_BALANCE_BITS, 254, PoseidonHasher>(
+    assert_inclusion::<_, MAX_BALANCE_BITS, 254, Poseidon2Hasher>(
         path_indices,
         sibling_hashes,
         sibling_balances,
@@ -438,7 +438,7 @@ fn test_sibling_balance_overflow() {
 fn test_sibling_balance_not_overflow_if_bigger_max_balance_bits() {
     let (path_indices, sibling_hashes, sibling_balances, root_hash, root_balance, user_hash, user_balance, user_id) =
         mock_128overflow_mallory_sibling_inputs();
-    assert_inclusion::<_, 129, 254, PoseidonHasher>(
+    assert_inclusion::<_, 129, 254, Poseidon2Hasher>(
         path_indices,
         sibling_hashes,
         sibling_balances,
