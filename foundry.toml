@@ -3,3 +3,7 @@ src = "contracts/src"
 out = "contracts/out"
 libs = ["contracts/lib"]
 test = "contracts/test"
+
+[rpc_endpoints]
+mainnet = "https://ethereum-rpc.publicnode.com"
+sepolia = "https://ethereum-sepolia-rpc.publicnode.com"
