@@ -7,7 +7,10 @@ interface IVerifier {
     function verify(bytes calldata proof, bytes32[] calldata publicInputs) external view returns (bool);
 }
 
+/// @title ProofOfLiabilities
+/// @notice Allows an exchange to add liability snapshots and lets users verify their balance is correctly included via a ZK Merkle Sum Tree proof.
 contract ProofOfLiabilities is Ownable2Step {
+    /// @notice Liability snapshot containing the Merkle Sum Tree root.
     struct Snapshot {
         bytes32 rootHash;
         uint128 rootBalance;
@@ -34,6 +37,9 @@ contract ProofOfLiabilities is Ownable2Step {
         VERIFIER = _verifier;
     }
 
+    /// @notice Adds a new liability snapshot. Only callable by the owner.
+    /// @param rootHash The Merkle Sum Tree root hash.
+    /// @param rootBalance The Merkle Sum Tree root balance i.e. the total liabilities.
     function addSnapshot(bytes32 rootHash, uint128 rootBalance) public onlyOwner {
         uint256 timestamp = block.timestamp;
         uint256 newSnapshot = sCurrentSnapshot + 1;
@@ -42,6 +48,10 @@ contract ProofOfLiabilities is Ownable2Step {
         emit ProofOfLiabilities__NewSnapshot(newSnapshot, rootHash, rootBalance, timestamp);
     }
 
+    /// @notice Verifies a user's inclusion proof against the current snapshot.
+    /// @param proof The ZK proof bytes.
+    /// @param userHash The user's leaf hash.
+    /// @return verified Whether the proof is valid.
     function verifyCurrentSnapshot(bytes memory proof, bytes32 userHash)
         public
         view
@@ -53,6 +63,11 @@ contract ProofOfLiabilities is Ownable2Step {
         verified = _tryVerify(proof, publicInputs);
     }
 
+    /// @notice Verifies a user's inclusion proof against a specific snapshot.
+    /// @param snapshotId The snapshot ID.
+    /// @param proof The ZK proof bytes.
+    /// @param userHash The user's leaf hash.
+    /// @return verified Whether the proof is valid.
     function verifySnapshot(uint256 snapshotId, bytes memory proof, bytes32 userHash)
         public
         view
