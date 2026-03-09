@@ -9,6 +9,12 @@ the other users.
 - [Background](#background)
 - [Circuit design](#circuit-design)
   - [Limitations](#limitations)
+- [Project architecture](#project-architecture)
+- [Getting started](#getting-started)
+  - [Dependencies](#dependencies)
+  - [Circuits](#circuits)
+  - [Contracts](#contracts)
+  - [Web demo](#web-demo)
 - [References](#references)
 
 ## Background
@@ -79,12 +85,6 @@ algorithm with the following inputs:
 | `user_balance`     | _PRIVATE_  |     `Field`      | The user's balance                                     |
 | `user_id`          | _PRIVATE_  |     `Field`      | Hash of the user's username and nonce                  |
 
-The Nargo workspace is comprised 2 crates:
-
-- The `zk_proof_of_liabilities` binary crate that provides sensible defaults
-- The `merkle_sum_tree` library crate that allows for customization and
-  integration into other circuits
-
 The customization happens via the following generics:
 
 - `DEPTH: u32`: The Merkle sum tree depth (`zk_proof_of_liabilities` uses `20`,
@@ -132,6 +132,199 @@ field modulus. Any other users in the tree would receive valid proofs.
 Therefore, the proof relies on a sufficient number of users verifying their
 proofs, which of course cannot be enforced. The more users verify, the harder it
 becomes for the CEX to manipulate the tree without being caught.
+
+## Project architecture
+
+## Getting started
+
+This repository works as a monorepo, all of the commands listed should be run
+from the root directory.
+
+### Dependencies
+
+| Tool                                                            | Version                  | Used for                                       |
+| --------------------------------------------------------------- | ------------------------ | ---------------------------------------------- |
+| [Noir (`nargo`)](https://noir-lang.org/docs/)                   | `1.0.0-beta.19`          | Compiling the circuits                         |
+| [Barretenberg (`bb`)](https://barretenberg.aztec.network/docs/) | `4.0.0-nightly.20260120` | Cryptographic backend for the circuits         |
+| [Foundry (`forge`)](https://www.getfoundry.sh/)                 | `1.5.1-stable`           | Compiling and deploying the Solidity contracts |
+| [Bun (`bun`)](https://bun.sh/)                                  | `1.3.1`                  | Running the scripts and web demo               |
+
+### Circuits
+
+The Nargo workspace is comprised of 2 crates:
+
+- The `zk_proof_of_liabilities` binary crate that provides sensible defaults
+- The `merkle_sum_tree` library crate that allows for customization and
+  integration into other circuits
+
+#### Compile the circuit
+
+```bash
+nargo compile
+```
+
+#### Execute the circuit
+
+Using the provided `Prover.toml`:
+
+```bash
+nargo execute
+```
+
+Using custom inputs:
+
+```bash
+nargo execute -p {PATH_TO_PROVER_TOML}
+```
+
+Refer to [Scripts](#scripts) to generate a `Prover.toml` from a custom dataset.
+
+#### Run unit tests
+
+```bash
+nargo test
+```
+
+#### Format the code
+
+```bash
+nargo fmt
+```
+
+#### Usage with Solidity contracts
+
+To use with Solidity contracts, add the `--oracle_hash keccak` flag to the `bb`
+commands.
+
+#### Generate the verification key
+
+Requires the circuit to be compiled.
+
+```bash
+bb write_vk -s ultra_honk -b ./target/zk_proof_of_liabilities.json -o ./target
+```
+
+#### Generate proof and verify
+
+Requires the circuit to be executed and the verification key to be generated.
+
+To generate the proof:
+
+```bash
+bb prove -s ultra_honk -b ./target/zk_proof_of_liabilities.json -w ./target/zk_proof_of_liabilities.gz -o ./target
+```
+
+To verify:
+
+```bash
+bb verify -k ./target/vk -p ./target/proof
+```
+
+#### Generate the verifier Solidity contract
+
+Requires the verification key to be generated.
+
+```bash
+bb write_solidity_verifier -s ultra_honk -k ./target/vk -o ./target/Verifier.sol
+```
+
+### Contracts
+
+#### Install dependencies
+
+```bash
+forge install
+```
+
+#### Build the contracts
+
+```bash
+forge build
+```
+
+#### Run unit tests
+
+```bash
+forge test
+```
+
+#### Generate test coverage report
+
+```bash
+forge coverage
+```
+
+#### Format the code
+
+```bash
+forge fmt
+```
+
+#### `Verifier.sol` contract generation
+
+The `HonkVerifier` contract is pre-generated and committed to the repository.
+
+Regenerate it if the circuit changes. Refer to the
+[Generate the verifier Solidity contract](#generate-the-verifier-solidity-contract)
+section.
+
+#### Deployments
+
+The contracts are currently deployed in the Sepolia network:
+
+- `Verifier.sol`:
+  [0x8b4A0163C18488542905E72FcCc3735431DE4A72](https://sepolia.etherscan.io/address/0x8b4A0163C18488542905E72FcCc3735431DE4A72)
+- `ProofOfLiabilities.sol`:
+  [0xCd99C5896C79E5354C7aEed5A99Cd2C22C7c1551](https://sepolia.etherscan.io/address/0xCd99C5896C79E5354C7aEed5A99Cd2C22C7c1551)
+
+For more deployment info, refer to the `broadcast/` folder.
+
+To deploy `Verifier.sol`:
+
+```bash
+forge script contracts/script/DeployVerifier.s.sol \
+--rpc-url sepolia \
+--broadcast --verify
+```
+
+To deploy `ProofOfLiabilities.sol`:
+
+```bash
+forge script contracts/script/DeployProofOfLiabilities.s.sol \
+{OWNER_ADDRESS} {VERIFIER_ADDRESS} \
+--rpc-url sepolia \
+--broadcast --verify
+```
+
+### Scripts
+
+#### Generate `Prover.toml`
+
+Create a CSV file with the users data. See `mock-data/users.csv` for reference.
+
+```bash
+bun run generate-prover-toml {PATH_TO_USER_DATA_CSV} {PROVING_USERNAME} > custom-prover.toml
+```
+
+### Web demo
+
+#### Start the dev server
+
+```bash
+bun run dev
+```
+
+#### Build for production
+
+```bash
+bun run build
+```
+
+#### Locally preview production build
+
+```bash
+bun run preview
+```
 
 ## References
 
