@@ -14,6 +14,7 @@ the other users.
   - [Dependencies](#dependencies)
   - [Circuits](#circuits)
   - [Contracts](#contracts)
+  - [Scripts](#scripts)
   - [Web demo](#web-demo)
 - [References](#references)
 
@@ -135,10 +136,23 @@ becomes for the CEX to manipulate the tree without being caught.
 
 ## Project architecture
 
+The repository is organized as a monorepo composed of a Nargo workspace, Bun
+workspace and Forge project.
+
+- `circuits/`: Nargo workspace containing the `zk_proof_of_liabilities` binary
+  crate and the `merkle_sum_tree` library crate
+- `contracts/`: Forge project containing the `ProofOfLiabilities` contract and
+  the pre-generated `HonkVerifier`
+- `sdk/`: TypeScript package with Merkle Sum Tree building and proof input
+  generation utilities
+- `scripts/`: TypeScript helper scripts
+- `web/`: Demo application
+- `mock-data/`: Mock users data that is used across the app and to generate the
+  tests' inputs
+
 ## Getting started
 
-This repository works as a monorepo, all of the commands listed should be run
-from the root directory.
+All of the commands listed should be run from the root directory.
 
 ### Dependencies
 
