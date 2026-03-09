@@ -8,9 +8,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { type ColumnDef } from "@tanstack/react-table";
-import { buildMerkleSumTree, getMerkleSumTreeRoot, type UserData } from "sdk";
+import {
+  buildMerkleSumTree,
+  getMerkleSumTreeRoot,
+  toHexBytes32,
+  type UserData,
+} from "sdk";
 import { CodeValue } from "@/CodeValue";
 import { ProofDialogContent } from "@/ProofDialogContent";
+import { ModeToggle } from "@/ModeToggle";
 
 const columns: ColumnDef<UserData>[] = [
   {
@@ -65,9 +71,12 @@ export function App() {
     <>
       <div className="mx-auto container min-h-svh py-6">
         <div className="flex gap-2 flex-col mb-10">
-          <h1 className="text-3xl font-bold text-primary-foreground">
-            ZK Proof of Liabilities
-          </h1>
+          <div className="flex gap-2 justify-between items-start">
+            <h1 className="text-3xl font-bold text-primary-foreground">
+              ZK Proof of Liabilities
+            </h1>
+            <ModeToggle />
+          </div>
           <p>
             Cryptographically prove to each user that their balance is correctly
             included in the total liabilities without revealing any data from
@@ -85,7 +94,7 @@ export function App() {
         </div>
         <div className="text-sm mb-1">
           <p>
-            Root hash: <CodeValue>0x{root.hash.toString(16)}</CodeValue>
+            Root hash: <CodeValue>{toHexBytes32(root.hash)}</CodeValue>
           </p>
           <p>
             Total liabilities: <CodeValue>{root.balance.toString()}</CodeValue>
