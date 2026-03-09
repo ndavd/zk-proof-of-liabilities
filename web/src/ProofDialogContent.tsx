@@ -7,10 +7,10 @@ import {
   toHex32,
 } from "sdk";
 import Circuit from "../../target/zk_proof_of_liabilities.json";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Noir, type CompiledCircuit } from "@noir-lang/noir_js";
 import { Barretenberg, UltraHonkBackend } from "@aztec/bb.js";
-import { createPublicClient, getContract, http, keccak256, toHex } from "viem";
+import { createPublicClient, getContract, http, toHex, type Hex } from "viem";
 import { sepolia } from "viem/chains";
 import { KeyValueGrid } from "@/KeyValueGrid";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { toast } from "sonner";
+import { Loader } from "@/Loader";
 
 const ProofOfLiabilitiesAbi = {
   abi: [
@@ -241,69 +243,72 @@ export const ProofDialogContent = ({
 }: ProofDialogProps) => {
   const { pathIndices, siblings } = buildMerkleSumTreeProof(tree, userIndex);
   const user = tree[0][userIndex];
+  const [zkp, setZkp] = useState<Hex>();
   const [verified, setVerified] = useState<boolean>();
+
+  const [pendingZkpMsg, setPendingZkpMsg] = useState<string>();
+  const [pendingVerifiedMsg, setPendingVerifiedMsg] = useState<string>();
+  const isPendingZkp = pendingZkpMsg !== undefined;
+  const isPendingVerifiedMsg = pendingVerifiedMsg !== undefined;
 
   const userHash = toHex32(user.hash);
   const userId = toHex32(userDataToUserId(userData));
 
-  const pending = verified === undefined;
-
-  useEffect(() => {
-    if (!pending) return;
-    (async () => {
-      try {
-        console.log("Creating Noir...");
-        const noir = new Noir(Circuit as CompiledCircuit);
-        console.log("Creating Barretenberg...");
-        const barretenberg = await Barretenberg.new();
-        console.log("Creating UltraHonkBackend...");
-        const backend = new UltraHonkBackend(Circuit.bytecode, barretenberg);
-        console.log("Generating witness... ⏳");
-        console.log({
-          path_indices: pathIndices,
-          sibling_hashes: siblings.map((s) => `0x${s.hash.toString(16)}`),
-          sibling_balances: siblings.map((s) => s.balance.toString()),
-          root_hash: `0x${root.hash.toString(16)}`,
-          root_balance: root.balance.toString(),
-          user_hash: userHash,
-          user_balance: user.balance.toString(),
-          user_id: userId,
+  const generateProof = useCallback(async () => {
+    try {
+      const noir = new Noir(Circuit as CompiledCircuit);
+      setPendingZkpMsg("Creating Barretenberg API...");
+      const api = await Barretenberg.new();
+      const backend = new UltraHonkBackend(Circuit.bytecode, api);
+      setPendingZkpMsg("Generating witness...");
+      const { witness } = await noir.execute({
+        path_indices: pathIndices,
+        sibling_hashes: siblings.map((s) => `0x${s.hash.toString(16)}`),
+        sibling_balances: siblings.map((s) => s.balance.toString()),
+        root_hash: `0x${root.hash.toString(16)}`,
+        root_balance: root.balance.toString(),
+        user_hash: userHash,
+        user_balance: user.balance.toString(),
+        user_id: userId,
+      });
+      setPendingZkpMsg("Generating proof...");
+      const { proof } = await backend.generateProof(witness, {
+        verifierTarget: "evm",
+      });
+      setZkp(toHex(proof));
+    } catch (e) {
+      console.error(e);
+      if (e instanceof Error) {
+        toast.error(e.name, {
+          description: e.message.slice(0, 300),
         });
-        const { witness } = await noir.execute({
-          path_indices: pathIndices,
-          sibling_hashes: siblings.map((s) => `0x${s.hash.toString(16)}`),
-          sibling_balances: siblings.map((s) => s.balance.toString()),
-          root_hash: `0x${root.hash.toString(16)}`,
-          root_balance: root.balance.toString(),
-          user_hash: userHash,
-          user_balance: user.balance.toString(),
-          user_id: userId,
-        });
-        console.log("Generated witness... ✅");
-        console.log("Generating proof... ⏳");
-        const { proof, publicInputs } = await backend.generateProof(witness, {
-          verifierTarget: "evm",
-        });
-        console.log("Generated proof... ✅");
-        console.log({ publicInputs, proof });
-        console.log({
-          userHash,
-          userId,
-          proof: keccak256(proof),
-        });
-        const v = await verifierContract.read.verifySnapshot([
-          BigInt(1),
-          toHex(proof),
-          userHash,
-        ]);
-        setVerified(v);
-        console.log({ v });
-      } catch (e) {
-        console.error(e);
-        setVerified(false);
       }
-    })();
-  }, [userHash, userId, pending, pathIndices, siblings, root, user, userData]);
+    } finally {
+      setPendingZkpMsg(undefined);
+    }
+  }, [pathIndices, root, userHash, userId, user.balance, siblings]);
+
+  const verifyProof = useCallback(async () => {
+    if (!zkp) return;
+    try {
+      setPendingVerifiedMsg("Verifying...");
+      const v = await verifierContract.read.verifySnapshot([
+        BigInt(1),
+        zkp,
+        userHash,
+      ]);
+      setVerified(v);
+    } catch (e) {
+      console.error(e);
+      if (e instanceof Error) {
+        toast.error(e.name, {
+          description: e.message.slice(0, 300),
+        });
+      }
+    } finally {
+      setPendingVerifiedMsg(undefined);
+    }
+  }, [zkp, userHash]);
 
   const openVerifierContract = () => {
     window.open(
@@ -327,9 +332,27 @@ export const ProofDialogContent = ({
         <div>Leaf hash:</div>
         <CodeValue>{userHash}</CodeValue>
       </KeyValueGrid>
-      <Button className="w-fit" variant="outline">
-        Generate ZKP
-      </Button>
+      <div className="flex gap-4 items-center">
+        <Button
+          className="w-fit"
+          variant="outline"
+          onClick={generateProof}
+          disabled={zkp !== undefined}
+        >
+          Generate ZKP
+        </Button>
+        {isPendingZkp ? (
+          <Loader className="size-4">{pendingZkpMsg}</Loader>
+        ) : (
+          <>
+            {zkp !== undefined ? (
+              <CodeValue copyValue={zkp}>{zkp.slice(0, 62)}...</CodeValue>
+            ) : (
+              <div />
+            )}
+          </>
+        )}
+      </div>
       <div className="flex gap-4 items-center">
         <div className="flex gap-1 items-center">
           <Tooltip>
@@ -340,22 +363,37 @@ export const ProofDialogContent = ({
                 className="w-fit"
                 variant="ghost"
               >
-                <InfoIcon className="size-5" />
+                <InfoIcon className="size-4" />
               </Button>
             </TooltipTrigger>
           </Tooltip>
-          <Button disabled className="w-fit" variant="outline">
+          <Button
+            disabled={zkp === undefined || verified !== undefined}
+            className="w-fit"
+            variant="outline"
+            onClick={verifyProof}
+          >
             Verify on-chain
           </Button>
         </div>
-        {!pending && (
-          <div>
-            {verified ? (
-              <span className="text-green-500">Verified ✅</span>
+        {isPendingVerifiedMsg ? (
+          <Loader className="size-4">{pendingVerifiedMsg}</Loader>
+        ) : (
+          <>
+            {verified !== undefined ? (
+              <>
+                {verified ? (
+                  <span className="text-green-500">Verified ✅</span>
+                ) : (
+                  <span className="text-destructive">
+                    Proof is not valid ❌
+                  </span>
+                )}
+              </>
             ) : (
-              <span className="text-red-500">Proof is not valid ❌</span>
+              <div />
             )}
-          </div>
+          </>
         )}
       </div>
     </div>
