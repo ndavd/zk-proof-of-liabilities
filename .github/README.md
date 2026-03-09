@@ -137,7 +137,7 @@ becomes for the CEX to manipulate the tree without being caught.
 ## Project architecture
 
 The repository is organized as a monorepo composed of a Nargo workspace, Bun
-workspace and Forge project.
+workspace, and Forge project.
 
 - `circuits/`: Nargo workspace containing the `zk_proof_of_liabilities` binary
   crate and the `merkle_sum_tree` library crate
