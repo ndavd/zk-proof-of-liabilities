@@ -287,9 +287,9 @@ section.
 The contracts are currently deployed in the Sepolia network:
 
 - `Verifier.sol`:
-  [0x8b4A0163C18488542905E72FcCc3735431DE4A72](https://sepolia.etherscan.io/address/0x8b4A0163C18488542905E72FcCc3735431DE4A72)
+  [`0x8b4A0163C18488542905E72FcCc3735431DE4A72`](https://sepolia.etherscan.io/address/0x8b4A0163C18488542905E72FcCc3735431DE4A72)
 - `ProofOfLiabilities.sol`:
-  [0xCd99C5896C79E5354C7aEed5A99Cd2C22C7c1551](https://sepolia.etherscan.io/address/0xCd99C5896C79E5354C7aEed5A99Cd2C22C7c1551)
+  [`0xCd99C5896C79E5354C7aEed5A99Cd2C22C7c1551`](https://sepolia.etherscan.io/address/0xCd99C5896C79E5354C7aEed5A99Cd2C22C7c1551)
 
 For more deployment info, refer to the `broadcast/` folder.
 
