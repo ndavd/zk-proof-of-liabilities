@@ -6,6 +6,8 @@ It allows a company to cryptographically prove to each user that their balance
 is correctly included in its total liabilities without revealing any data from
 the other users.
 
+Live demo: [zk-liabilities.ndavd.com](https://zk-liabilities.ndavd.com)
+
 - [Background](#background)
 - [Circuit design](#circuit-design)
   - [Limitations](#limitations)
