@@ -17,6 +17,7 @@ import {
 import { CodeValue } from "@/CodeValue";
 import { ProofDialogContent } from "@/ProofDialogContent";
 import { ModeToggle } from "@/ModeToggle";
+import { KeyValueGrid } from "@/KeyValueGrid";
 
 const columns: ColumnDef<UserData>[] = [
   {
@@ -92,16 +93,14 @@ export function App() {
             <GithubLogoIcon />
           </a>
         </div>
-        <div className="text-sm mb-1">
-          <p>
-            Root hash: <CodeValue>{toHexBytes32(root.hash)}</CodeValue>
-          </p>
-          <p>
-            Total liabilities: <CodeValue>{root.balance.toString()}</CodeValue>
-          </p>
-          <br />
-          <p>Click on a user to generate their ZKP.</p>
-        </div>
+        <KeyValueGrid>
+          <p>Root hash:</p>
+          <CodeValue>{toHexBytes32(root.hash)}</CodeValue>
+          <p>Total liabilities:</p>
+          <CodeValue>{root.balance.toString()}</CodeValue>
+        </KeyValueGrid>
+        <br />
+        <p>Click on a user to generate their ZKP.</p>
         <DataTable
           columns={columns}
           data={DATA}

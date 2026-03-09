@@ -6,7 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider.tsx";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 createRoot(document.getElementById("root")!).render(
-  <ThemeProvider>
+  <ThemeProvider defaultTheme="dark">
     <TooltipProvider>
       <App />
     </TooltipProvider>

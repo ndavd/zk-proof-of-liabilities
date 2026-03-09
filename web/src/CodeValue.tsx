@@ -34,7 +34,12 @@ export const CodeValue = ({ copyValue, children }: CodeValue) => {
           setHasCopied(true);
         }}
       >
-        <code className="cursor-pointer bg-secondary px-1 hover:text-primary-foreground">
+        <code
+          className="overflow-x-scroll no-scrollbar cursor-pointer
+          bg-secondary px-1
+          text-secondary-foreground/70
+          hover:text-primary-foreground"
+        >
           {children}
         </code>
       </TooltipTrigger>
