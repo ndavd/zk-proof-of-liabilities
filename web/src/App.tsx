@@ -8,12 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { type ColumnDef } from "@tanstack/react-table";
-import {
-  buildMerkleSumTree,
-  getMerkleSumTreeRoot,
-  toHex32,
-  type UserData,
-} from "sdk";
+import { MerkleSumTree, type UserData } from "sdk";
 import { CodeValue } from "@/CodeValue";
 import { ProofDialogContent } from "@/ProofDialogContent";
 import { ModeToggle } from "@/ModeToggle";
@@ -65,8 +60,8 @@ export function App() {
     userIndex: number;
   }>();
 
-  const tree = buildMerkleSumTree(DATA, 20);
-  const root = getMerkleSumTreeRoot(tree);
+  const tree = new MerkleSumTree(DATA);
+  const root = tree.root;
 
   return (
     <>
@@ -95,7 +90,7 @@ export function App() {
         </div>
         <KeyValueGrid>
           <p>Root hash:</p>
-          <CodeValue>{toHex32(root.hash)}</CodeValue>
+          <CodeValue>{root.hash.toString()}</CodeValue>
           <p>Total liabilities:</p>
           <CodeValue>{root.balance.toString()}</CodeValue>
         </KeyValueGrid>

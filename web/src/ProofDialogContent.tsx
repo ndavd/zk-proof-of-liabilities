@@ -1,10 +1,9 @@
 import { CodeValue } from "@/CodeValue";
 import {
   type UserData,
-  type Node,
-  buildMerkleSumTreeProof,
-  userDataToUserId,
-  toHex32,
+  MerkleSumTree,
+  buildCircuitInputs,
+  toInputMap,
 } from "sdk";
 import Circuit from "../../target/zk_proof_of_liabilities.json";
 import { useCallback, useState } from "react";
@@ -229,20 +228,16 @@ const verifierContract = getContract({
 });
 
 export interface ProofDialogProps {
-  tree: Node[][];
-  root: Node;
+  tree: MerkleSumTree;
   userData: UserData;
   userIndex: number;
 }
 
 export const ProofDialogContent = ({
   tree,
-  root,
   userData,
   userIndex,
 }: ProofDialogProps) => {
-  const { pathIndices, siblings } = buildMerkleSumTreeProof(tree, userIndex);
-  const user = tree[0][userIndex];
   const [zkp, setZkp] = useState<Hex>();
   const [verified, setVerified] = useState<boolean>();
 
@@ -251,8 +246,10 @@ export const ProofDialogContent = ({
   const isPendingZkp = pendingZkpMsg !== undefined;
   const isPendingVerifiedMsg = pendingVerifiedMsg !== undefined;
 
-  const userHash = toHex32(user.hash);
-  const userId = toHex32(userDataToUserId(userData));
+  const circuitInputs = buildCircuitInputs(tree, userData, userIndex);
+
+  const userHash = circuitInputs.user_hash;
+  const userId = circuitInputs.user_id;
 
   const generateProof = useCallback(async () => {
     try {
@@ -261,16 +258,7 @@ export const ProofDialogContent = ({
       const api = await Barretenberg.new();
       const backend = new UltraHonkBackend(Circuit.bytecode, api);
       setPendingZkpMsg("Generating witness...");
-      const { witness } = await noir.execute({
-        path_indices: pathIndices,
-        sibling_hashes: siblings.map((s) => `0x${s.hash.toString(16)}`),
-        sibling_balances: siblings.map((s) => s.balance.toString()),
-        root_hash: `0x${root.hash.toString(16)}`,
-        root_balance: root.balance.toString(),
-        user_hash: userHash,
-        user_balance: user.balance.toString(),
-        user_id: userId,
-      });
+      const { witness } = await noir.execute(toInputMap(circuitInputs));
       setPendingZkpMsg("Generating proof...");
       const { proof } = await backend.generateProof(witness, {
         verifierTarget: "evm",
@@ -286,7 +274,7 @@ export const ProofDialogContent = ({
     } finally {
       setPendingZkpMsg(undefined);
     }
-  }, [pathIndices, root, userHash, userId, user.balance, siblings]);
+  }, [circuitInputs]);
 
   const verifyProof = useCallback(async () => {
     if (!zkp) return;
@@ -368,7 +356,7 @@ export const ProofDialogContent = ({
               User hash public input. Composed of the hash of the ID and
               balance.
             </TooltipContent>
-            <TooltipTrigger>
+            <TooltipTrigger asChild>
               <div className="flex gap-1 items-center">
                 <InfoIcon className="size-3" />
                 <span>[public] Hash:</span>

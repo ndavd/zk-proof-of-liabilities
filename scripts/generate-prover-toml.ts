@@ -1,13 +1,7 @@
 import fs from "fs";
 import * as z from "zod";
 import Papa from "papaparse";
-import {
-  buildMerkleSumTree,
-  buildMerkleSumTreeProof,
-  getMerkleSumTreeRoot,
-  userDataToUserId,
-  type Node,
-} from "sdk";
+import { buildCircuitInputs, MerkleSumTree } from "sdk";
 
 const csvPathArg = process.argv[2];
 const provingUsername = process.argv[3];
@@ -72,35 +66,31 @@ if (provingUserIndex == -1) {
   process.exit(1);
 }
 
-const t = buildMerkleSumTree(usersData, 20);
-const p = buildMerkleSumTreeProof(t, provingUserIndex);
-const root = getMerkleSumTreeRoot(t);
+const t = new MerkleSumTree(usersData);
 
-const toProverToml = (
-  proof: ReturnType<typeof buildMerkleSumTreeProof>,
-  root: Node,
-  user: Node,
-  userId: bigint,
-): string => {
-  const arr = (values: (string | number)[]) => `[${values.join(", ")}]`;
+const {
+  path_indices,
+  sibling_hashes,
+  sibling_balances,
+  root_hash,
+  root_balance,
+  user_hash,
+  user_balance,
+  user_id,
+} = buildCircuitInputs(t, usersData[provingUserIndex]!, provingUserIndex);
 
-  return [
-    `path_indices = ${arr(proof.pathIndices.map((p) => `"${p}"`))}`,
-    `sibling_hashes = ${arr(proof.siblings.map((s) => `"0x${s.hash.toString(16)}"`))}`,
-    `sibling_balances = ${arr(proof.siblings.map((s) => `"${s.balance.toString()}"`))}`,
-    `root_hash = "0x${root.hash.toString(16)}"`,
-    `root_balance = "${root.balance.toString()}"`,
-    `user_hash = "0x${user.hash.toString(16)}"`,
-    `user_balance = "${user.balance.toString()}"`,
-    `user_id = "0x${userId.toString(16)}"`,
-  ].join("\n");
-};
+const stringifyArr = (values: string[]) =>
+  `[${values.map((v) => `"${v}"`).join(", ")}]`;
 
-console.log(
-  toProverToml(
-    p,
-    root,
-    t[0]![provingUserIndex]!,
-    userDataToUserId(usersData![provingUserIndex]!),
-  ),
-);
+const toml = [
+  `path_indices = ${stringifyArr(path_indices)}`,
+  `sibling_hashes = ${stringifyArr(sibling_hashes)}`,
+  `sibling_balances = ${stringifyArr(sibling_balances)}`,
+  `root_hash = "${root_hash}"`,
+  `root_balance = "${root_balance}"`,
+  `user_hash = "${user_hash}"`,
+  `user_balance = "${user_balance}"`,
+  `user_id = "${user_id}"`,
+].join("\n");
+
+console.log(toml);
