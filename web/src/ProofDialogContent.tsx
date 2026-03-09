@@ -321,15 +321,61 @@ export const ProofDialogContent = ({
   return (
     <div className="text-sm flex gap-4 flex-col max-h-[50vh] overflow-y-auto">
       <KeyValueGrid>
-        <div>Name:</div>
+        <div>
+          <span className="text-secondary-foreground/60">[private]</span>{" "}
+          Username:
+        </div>
         <CodeValue>{userData.username}</CodeValue>
-        <div>Nonce:</div>
+        <div>
+          <Tooltip>
+            <TooltipContent>
+              Private nonce value attributed to the user.
+            </TooltipContent>
+            <TooltipTrigger asChild>
+              <div className="flex gap-1 items-center">
+                <InfoIcon className="size-3" />
+                <span className="text-secondary-foreground/60">[private]</span>{" "}
+                Nonce:
+              </div>
+            </TooltipTrigger>
+          </Tooltip>
+        </div>
         <CodeValue>{userData.nonce}</CodeValue>
-        <div>Balance:</div>
+        <div>
+          <span className="text-secondary-foreground/60">[private]</span>{" "}
+          Balance:
+        </div>
         <CodeValue>{userData.balance.toString()}</CodeValue>
-        <div className="mt-4">ID:</div>
+        <div className="mt-4">
+          <Tooltip>
+            <TooltipContent>
+              User identifier used in the circuit. Composed of the hash of the
+              username and nonce.
+            </TooltipContent>
+            <TooltipTrigger asChild>
+              <div className="flex gap-1 items-center">
+                <InfoIcon className="size-3" />
+                <span className="text-secondary-foreground/60">[private]</span>{" "}
+                ID:
+              </div>
+            </TooltipTrigger>
+          </Tooltip>
+        </div>
         <CodeValue className="mt-4">{userId}</CodeValue>
-        <div>Leaf hash:</div>
+        <div>
+          <Tooltip>
+            <TooltipContent>
+              User hash public input. Composed of the hash of the ID and
+              balance.
+            </TooltipContent>
+            <TooltipTrigger>
+              <div className="flex gap-1 items-center">
+                <InfoIcon className="size-3" />
+                <span>[public] Hash:</span>
+              </div>
+            </TooltipTrigger>
+          </Tooltip>
+        </div>
         <CodeValue>{userHash}</CodeValue>
       </KeyValueGrid>
       <div className="flex gap-4 items-center">
@@ -346,7 +392,12 @@ export const ProofDialogContent = ({
         ) : (
           <>
             {zkp !== undefined ? (
-              <CodeValue copyValue={zkp}>{zkp.slice(0, 62)}...</CodeValue>
+              <div>
+                ZKP:{" "}
+                <CodeValue copyValue={zkp}>
+                  {zkp.slice(0, 30)}...{zkp.slice(-32)}
+                </CodeValue>
+              </div>
             ) : (
               <div />
             )}
@@ -383,7 +434,9 @@ export const ProofDialogContent = ({
             {verified !== undefined ? (
               <>
                 {verified ? (
-                  <span className="text-green-500">Verified ✅</span>
+                  <span className="text-green-500 font-medium">
+                    Verified ✅
+                  </span>
                 ) : (
                   <span className="text-destructive">
                     Proof is not valid ❌
