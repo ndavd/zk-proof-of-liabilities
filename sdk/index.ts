@@ -37,7 +37,11 @@ const toHex32 = (value: Parameters<typeof toHex>[0]) => {
 };
 
 export class Hash {
-  constructor(public readonly value: bigint) {}
+  public readonly value: bigint;
+
+  constructor(value: bigint) {
+    this.value = value;
+  }
 
   toString(): Hex {
     return toHex32(this.value);

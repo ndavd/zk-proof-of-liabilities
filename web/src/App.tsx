@@ -122,7 +122,6 @@ export function App() {
           {selectedUser && (
             <ProofDialogContent
               tree={tree}
-              root={root}
               userData={selectedUser.userData}
               userIndex={selectedUser.userIndex}
             />
