@@ -17,7 +17,7 @@ import {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  onRowClick?: (row: TData) => void;
+  onRowClick?: (row: TData, index: number) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -59,7 +59,7 @@ export function DataTable<TData, TValue>({
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
                 className="hover:text-secondary-foreground hover:cursor-pointer hover:bg-primary/10"
-                onClick={() => onRowClick?.(row.original)}
+                onClick={() => onRowClick?.(row.original, row.index)}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>

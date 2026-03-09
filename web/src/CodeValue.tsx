@@ -19,10 +19,14 @@ export const CodeValue = ({ copyValue, children }: CodeValue) => {
         if (!open) setTimeout(() => setHasCopied(false), 100);
       }}
     >
-      <TooltipContent onPointerDownOutside={(e) => e.preventDefault()}>
+      <TooltipContent
+        onPointerDownOutside={(e) => e.preventDefault()}
+        side="right"
+      >
         {hasCopied ? "Copied!" : "Copy"}
       </TooltipContent>
       <TooltipTrigger
+        asChild
         onPointerDown={(e) => e.preventDefault()}
         onClick={(e) => {
           e.preventDefault();

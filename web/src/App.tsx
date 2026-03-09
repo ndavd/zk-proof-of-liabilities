@@ -7,11 +7,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
 import { type ColumnDef } from "@tanstack/react-table";
-
 import { buildMerkleSumTree, getMerkleSumTreeRoot, type UserData } from "sdk";
 import { CodeValue } from "@/CodeValue";
+import { ProofDialogContent } from "@/ProofDialogContent";
 
 const columns: ColumnDef<UserData>[] = [
   {
@@ -54,10 +53,13 @@ const DATA: UserData[] = [
 ];
 
 export function App() {
-  const [selected, setSelected] = useState<UserData | null>(null);
+  const [selectedUser, setSelectedUser] = useState<{
+    userData: UserData;
+    userIndex: number;
+  }>();
 
-  const t = buildMerkleSumTree(DATA, 20);
-  const root = getMerkleSumTreeRoot(t);
+  const tree = buildMerkleSumTree(DATA, 20);
+  const root = getMerkleSumTreeRoot(tree);
 
   return (
     <>
@@ -86,17 +88,23 @@ export function App() {
             Root hash: <CodeValue>0x{root.hash.toString(16)}</CodeValue>
           </p>
           <p>
-            Root balance: <CodeValue>{root.balance.toString()}</CodeValue>
+            Total liabilities: <CodeValue>{root.balance.toString()}</CodeValue>
           </p>
           <br />
           <p>Click on a user to generate their ZKP.</p>
         </div>
-        <DataTable columns={columns} data={DATA} onRowClick={setSelected} />
+        <DataTable
+          columns={columns}
+          data={DATA}
+          onRowClick={(row, index) => {
+            setSelectedUser({ userData: row, userIndex: index });
+          }}
+        />
       </div>
       <Dialog
-        open={selected !== null}
+        open={selectedUser !== undefined}
         onOpenChange={(open) => {
-          if (!open) setSelected(null);
+          if (!open) setSelectedUser(undefined);
         }}
       >
         <DialogContent
@@ -104,18 +112,17 @@ export function App() {
           onInteractOutside={(e) => e.preventDefault()}
         >
           <DialogHeader>
-            <DialogTitle>{selected?.username}</DialogTitle>
+            <DialogTitle className="text-primary-foreground">
+              {selectedUser?.userData.username}'s ZKP
+            </DialogTitle>
           </DialogHeader>
-          {selected && (
-            <div className="text-sm">
-              <div>
-                <span className="font-medium">Nonce:</span> {selected.nonce}
-              </div>
-              <div>
-                <span className="font-medium">Balance:</span>{" "}
-                {selected.balance.toString()}
-              </div>
-            </div>
+          {selectedUser && (
+            <ProofDialogContent
+              tree={tree}
+              root={root}
+              userData={selectedUser.userData}
+              userIndex={selectedUser.userIndex}
+            />
           )}
         </DialogContent>
       </Dialog>

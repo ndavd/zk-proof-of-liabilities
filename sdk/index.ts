@@ -1,4 +1,5 @@
 import { poseidon2Hash } from "@zkpassport/poseidon2";
+import { toHex } from "viem";
 
 /**
  * Encodes a UTF-8 string into a field element for use in ZK circuits.
@@ -135,4 +136,8 @@ export const buildMerkleSumTreeProof = (
 
 export const getMerkleSumTreeRoot = (levels: Node[][]): Node => {
   return levels[levels.length - 1]![0]!;
+};
+
+export const toHexBytes32 = (value: Parameters<typeof toHex>[0]) => {
+  return toHex(value, { size: 32 });
 };
