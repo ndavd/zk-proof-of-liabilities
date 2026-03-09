@@ -3,14 +3,16 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import { useCopyToClipboard } from "@uidotdev/usehooks";
 import { useState, type PropsWithChildren } from "react";
 
 export interface CodeValue extends PropsWithChildren {
+  className?: string;
   copyValue?: string;
 }
 
-export const CodeValue = ({ copyValue, children }: CodeValue) => {
+export const CodeValue = ({ copyValue, className, children }: CodeValue) => {
   const [, copyToClipboard] = useCopyToClipboard();
   const [hasCopied, setHasCopied] = useState(false);
   return (
@@ -35,10 +37,10 @@ export const CodeValue = ({ copyValue, children }: CodeValue) => {
         }}
       >
         <code
-          className="overflow-x-scroll no-scrollbar cursor-pointer
-          bg-secondary px-1
-          text-secondary-foreground/70
-          hover:text-primary-foreground"
+          className={cn(
+            "overflow-x-scroll no-scrollbar cursor-pointer bg-secondary px-1 text-secondary-foreground/70 hover:text-primary-foreground",
+            className,
+          )}
         >
           {children}
         </code>

@@ -4,7 +4,7 @@ import {
   type Node,
   buildMerkleSumTreeProof,
   userDataToUserId,
-  toHexBytes32,
+  toHex32,
 } from "sdk";
 import Circuit from "../../target/zk_proof_of_liabilities.json";
 import { useEffect, useState } from "react";
@@ -12,6 +12,14 @@ import { Noir, type CompiledCircuit } from "@noir-lang/noir_js";
 import { Barretenberg, UltraHonkBackend } from "@aztec/bb.js";
 import { createPublicClient, getContract, http, keccak256, toHex } from "viem";
 import { sepolia } from "viem/chains";
+import { KeyValueGrid } from "@/KeyValueGrid";
+import { Button } from "@/components/ui/button";
+import { InfoIcon } from "@phosphor-icons/react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const ProofOfLiabilitiesAbi = {
   abi: [
@@ -207,6 +215,17 @@ const ProofOfLiabilitiesAbi = {
   ],
 } as const;
 
+const CONTRACT_ADDRESS = "0xCd99C5896C79E5354C7aEed5A99Cd2C22C7c1551";
+
+const verifierContract = getContract({
+  abi: ProofOfLiabilitiesAbi.abi,
+  address: CONTRACT_ADDRESS,
+  client: createPublicClient({
+    chain: sepolia,
+    transport: http(),
+  }),
+});
+
 export interface ProofDialogProps {
   tree: Node[][];
   root: Node;
@@ -224,18 +243,13 @@ export const ProofDialogContent = ({
   const user = tree[0][userIndex];
   const [verified, setVerified] = useState<boolean>();
 
+  const userHash = toHex32(user.hash);
+  const userId = toHex32(userDataToUserId(userData));
+
   const pending = verified === undefined;
 
   useEffect(() => {
     if (!pending) return;
-    const verifierContract = getContract({
-      abi: ProofOfLiabilitiesAbi.abi,
-      address: "0xCd99C5896C79E5354C7aEed5A99Cd2C22C7c1551",
-      client: createPublicClient({
-        chain: sepolia,
-        transport: http(),
-      }),
-    });
     (async () => {
       try {
         console.log("Creating Noir...");
@@ -251,9 +265,9 @@ export const ProofDialogContent = ({
           sibling_balances: siblings.map((s) => s.balance.toString()),
           root_hash: `0x${root.hash.toString(16)}`,
           root_balance: root.balance.toString(),
-          user_hash: `0x${user.hash.toString(16)}`,
+          user_hash: userHash,
           user_balance: user.balance.toString(),
-          user_id: `0x${userDataToUserId(userData).toString(16)}`,
+          user_id: userId,
         });
         const { witness } = await noir.execute({
           path_indices: pathIndices,
@@ -261,9 +275,9 @@ export const ProofDialogContent = ({
           sibling_balances: siblings.map((s) => s.balance.toString()),
           root_hash: `0x${root.hash.toString(16)}`,
           root_balance: root.balance.toString(),
-          user_hash: `0x${user.hash.toString(16)}`,
+          user_hash: userHash,
           user_balance: user.balance.toString(),
-          user_id: `0x${userDataToUserId(userData).toString(16)}`,
+          user_id: userId,
         });
         console.log("Generated witness... ✅");
         console.log("Generating proof... ⏳");
@@ -272,10 +286,9 @@ export const ProofDialogContent = ({
         });
         console.log("Generated proof... ✅");
         console.log({ publicInputs, proof });
-        const userHash = toHexBytes32(user.hash);
         console.log({
           userHash,
-          userId: toHex(userDataToUserId(userData)),
+          userId,
           proof: keccak256(proof),
         });
         const v = await verifierContract.read.verifySnapshot([
@@ -290,20 +303,61 @@ export const ProofDialogContent = ({
         setVerified(false);
       }
     })();
-  }, [pending, pathIndices, siblings, root, user, userData]);
+  }, [userHash, userId, pending, pathIndices, siblings, root, user, userData]);
+
+  const openVerifierContract = () => {
+    window.open(
+      `https://sepolia.etherscan.io/address/${CONTRACT_ADDRESS}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
+  };
 
   return (
-    <div className="text-sm">
-      <div>
-        Name: <CodeValue>{userData.username}</CodeValue>
+    <div className="text-sm flex gap-4 flex-col max-h-[50vh] overflow-y-auto">
+      <KeyValueGrid>
+        <div>Name:</div>
+        <CodeValue>{userData.username}</CodeValue>
+        <div>Nonce:</div>
+        <CodeValue>{userData.nonce}</CodeValue>
+        <div>Balance:</div>
+        <CodeValue>{userData.balance.toString()}</CodeValue>
+        <div className="mt-4">ID:</div>
+        <CodeValue className="mt-4">{userId}</CodeValue>
+        <div>Leaf hash:</div>
+        <CodeValue>{userHash}</CodeValue>
+      </KeyValueGrid>
+      <Button className="w-fit" variant="outline">
+        Generate ZKP
+      </Button>
+      <div className="flex gap-4 items-center">
+        <div className="flex gap-1 items-center">
+          <Tooltip>
+            <TooltipContent>View verifier contract</TooltipContent>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={openVerifierContract}
+                className="w-fit"
+                variant="ghost"
+              >
+                <InfoIcon className="size-5" />
+              </Button>
+            </TooltipTrigger>
+          </Tooltip>
+          <Button disabled className="w-fit" variant="outline">
+            Verify on-chain
+          </Button>
+        </div>
+        {!pending && (
+          <div>
+            {verified ? (
+              <span className="text-green-500">Verified ✅</span>
+            ) : (
+              <span className="text-red-500">Proof is not valid ❌</span>
+            )}
+          </div>
+        )}
       </div>
-      <div>
-        Nonce: <CodeValue>{userData.nonce}</CodeValue>
-      </div>
-      <div>
-        Balance: <CodeValue>{userData.balance.toString()}</CodeValue>
-      </div>
-      <div>Verified: {pending ? "..." : verified ? "true ✅" : "false"}</div>
     </div>
   );
 };

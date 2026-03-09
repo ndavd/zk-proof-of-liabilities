@@ -11,7 +11,7 @@ import { type ColumnDef } from "@tanstack/react-table";
 import {
   buildMerkleSumTree,
   getMerkleSumTreeRoot,
-  toHexBytes32,
+  toHex32,
   type UserData,
 } from "sdk";
 import { CodeValue } from "@/CodeValue";
@@ -95,7 +95,7 @@ export function App() {
         </div>
         <KeyValueGrid>
           <p>Root hash:</p>
-          <CodeValue>{toHexBytes32(root.hash)}</CodeValue>
+          <CodeValue>{toHex32(root.hash)}</CodeValue>
           <p>Total liabilities:</p>
           <CodeValue>{root.balance.toString()}</CodeValue>
         </KeyValueGrid>
@@ -120,7 +120,7 @@ export function App() {
           onInteractOutside={(e) => e.preventDefault()}
         >
           <DialogHeader>
-            <DialogTitle className="text-primary-foreground">
+            <DialogTitle className="text-primary-foreground text-xl">
               {selectedUser?.userData.username}'s ZKP
             </DialogTitle>
           </DialogHeader>

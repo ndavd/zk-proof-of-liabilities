@@ -138,6 +138,6 @@ export const getMerkleSumTreeRoot = (levels: Node[][]): Node => {
   return levels[levels.length - 1]![0]!;
 };
 
-export const toHexBytes32 = (value: Parameters<typeof toHex>[0]) => {
+export const toHex32 = (value: Parameters<typeof toHex>[0]) => {
   return toHex(value, { size: 32 });
 };
