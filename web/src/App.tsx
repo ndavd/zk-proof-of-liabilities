@@ -65,10 +65,10 @@ export function App() {
 
   return (
     <>
-      <div className="mx-auto container min-h-svh py-6">
+      <div className="mx-auto container min-h-svh py-6 px-2">
         <div className="flex gap-2 flex-col mb-10">
           <div className="flex gap-2 justify-between items-start">
-            <h1 className="text-3xl font-bold text-primary-foreground">
+            <h1 className="text-2xl sm:text-3xl font-bold text-primary-foreground">
               ZK Proof of Liabilities
             </h1>
             <ModeToggle />
