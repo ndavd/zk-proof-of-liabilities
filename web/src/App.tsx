@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { DataTable } from "@/DataTable";
 import { GithubLogoIcon } from "@phosphor-icons/react";
+import { UltraHonkBackend } from "@aztec/bb.js";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +14,7 @@ import { CodeValue } from "@/CodeValue";
 import { ProofDialogContent } from "@/ProofDialogContent";
 import { ModeToggle } from "@/ModeToggle";
 import { KeyValueGrid } from "@/KeyValueGrid";
+import type { Hex } from "viem";
 
 const columns: ColumnDef<UserData>[] = [
   {
@@ -59,6 +61,10 @@ export function App() {
     userData: UserData;
     userIndex: number;
   }>();
+
+  const circuitBackend = useRef<UltraHonkBackend | undefined>(undefined);
+  // Map of user ID -> proof
+  const proofs = useRef<Map<Hex, Hex>>(new Map());
 
   const tree = new MerkleSumTree(DATA);
   const root = tree.root;
@@ -124,6 +130,8 @@ export function App() {
               tree={tree}
               userData={selectedUser.userData}
               userIndex={selectedUser.userIndex}
+              circuitBackend={circuitBackend}
+              proofs={proofs}
             />
           )}
         </DialogContent>

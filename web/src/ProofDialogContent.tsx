@@ -7,7 +7,7 @@ import {
 } from "sdk";
 import Circuit from "@/artifacts/zk_proof_of_liabilities.json";
 import { PROOF_OF_LIABILITIES_CONTRACT } from "@/contracts/ProofOfLiabilities";
-import { useCallback, useState } from "react";
+import { useCallback, useState, type RefObject } from "react";
 import { Noir, type CompiledCircuit } from "@noir-lang/noir_js";
 import { Barretenberg, UltraHonkBackend } from "@aztec/bb.js";
 import { toHex, type Hex } from "viem";
@@ -26,14 +26,23 @@ export interface ProofDialogProps {
   tree: MerkleSumTree;
   userData: UserData;
   userIndex: number;
+  circuitBackend: RefObject<UltraHonkBackend | undefined>;
+  proofs: RefObject<Map<Hex, Hex>>;
 }
 
 export const ProofDialogContent = ({
   tree,
   userData,
   userIndex,
+  circuitBackend,
+  proofs,
 }: ProofDialogProps) => {
-  const [zkp, setZkp] = useState<Hex>();
+  const circuitInputs = buildCircuitInputs(tree, userData, userIndex);
+
+  const userHash = circuitInputs.user_hash;
+  const userId = circuitInputs.user_id;
+
+  const [zkp, setZkp] = useState<Hex | undefined>(proofs.current.get(userId));
   const [verified, setVerified] = useState<boolean>();
 
   const [pendingZkpMsg, setPendingZkpMsg] = useState<string>();
@@ -41,24 +50,27 @@ export const ProofDialogContent = ({
   const isPendingZkp = pendingZkpMsg !== undefined;
   const isPendingVerifiedMsg = pendingVerifiedMsg !== undefined;
 
-  const circuitInputs = buildCircuitInputs(tree, userData, userIndex);
-
-  const userHash = circuitInputs.user_hash;
-  const userId = circuitInputs.user_id;
-
   const generateProof = useCallback(async () => {
     try {
       const noir = new Noir(Circuit as CompiledCircuit);
       setPendingZkpMsg("Creating Barretenberg API...");
-      const api = await Barretenberg.new();
-      const backend = new UltraHonkBackend(Circuit.bytecode, api);
+      let backend: UltraHonkBackend;
+      if (circuitBackend.current !== undefined) {
+        backend = circuitBackend.current;
+      } else {
+        const api = await Barretenberg.new();
+        backend = new UltraHonkBackend(Circuit.bytecode, api);
+        circuitBackend.current = backend;
+      }
       setPendingZkpMsg("Generating witness...");
       const { witness } = await noir.execute(toInputMap(circuitInputs));
       setPendingZkpMsg("Generating proof...");
       const { proof } = await backend.generateProof(witness, {
         verifierTarget: "evm",
       });
-      setZkp(toHex(proof));
+      const p = toHex(proof);
+      setZkp(p);
+      proofs.current.set(circuitInputs.user_id, p);
     } catch (e) {
       console.error(e);
       if (e instanceof Error) {
@@ -69,7 +81,7 @@ export const ProofDialogContent = ({
     } finally {
       setPendingZkpMsg(undefined);
     }
-  }, [circuitInputs]);
+  }, [circuitInputs, circuitBackend, proofs]);
 
   const verifyProof = useCallback(async () => {
     if (!zkp) return;
@@ -196,6 +208,7 @@ export const ProofDialogContent = ({
                 onClick={openVerifierContract}
                 className="w-fit"
                 variant="ghost"
+                autoFocus={false}
               >
                 <InfoIcon className="size-4" />
               </Button>
