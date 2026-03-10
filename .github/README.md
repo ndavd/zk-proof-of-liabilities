@@ -141,7 +141,7 @@ becomes for the CEX to manipulate the tree without being caught.
 The repository is organized as a monorepo composed of a Nargo workspace, Bun
 workspace, and Forge project.
 
-- `circuits/`: Nargo workspace containing the `zk_proof_of_liabilities` binary
+- `crates/`: Nargo workspace containing the `zk_proof_of_liabilities` binary
   crate and the `merkle_sum_tree` library crate
 - `contracts/`: Forge project containing the `ProofOfLiabilities` contract and
   the pre-generated `HonkVerifier`
