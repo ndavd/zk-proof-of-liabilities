@@ -173,6 +173,15 @@ The Nargo workspace is comprised of 2 crates:
 - The `merkle_sum_tree` library crate that allows for customization and
   integration into other circuits
 
+#### Use as library
+
+```toml
+[dependencies]
+merkle_sum_tree = { tag = "v0.1.0", git = "https://github.com/ndavd/zk-proof-of-liabilities" }
+```
+
+Refer to `crates/zk_proof_of_liabilities/src/main.nr` for a usage example.
+
 #### Compile the circuit
 
 ```bash
