@@ -179,7 +179,7 @@ Add this library to your `Nargo.toml`:
 
 ```toml
 [dependencies]
-merkle_sum_tree = { tag = "v0.1.0", git = "https://github.com/ndavd/zk-proof-of-liabilities" }
+merkle_sum_tree = { tag = "v0.1.0", git = "https://github.com/ndavd/zk-proof-of-liabilities", directory = "crates/merkle_sum_tree" }
 ```
 
 Refer to `crates/zk_proof_of_liabilities/src/main.nr` for a usage example.
