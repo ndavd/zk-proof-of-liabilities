@@ -14,13 +14,14 @@ import { toHex, type Hex } from "viem";
 import { KeyValueGrid } from "@/KeyValueGrid";
 import { Button } from "@/components/ui/button";
 import { InfoIcon } from "@phosphor-icons/react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { Loader } from "@/Loader";
+import { InfoTooltip } from "@/InfoTooltip";
+import {
+  HybridTooltip,
+  HybridTooltipContent,
+  HybridTooltipTrigger,
+} from "@/HybridTooltip";
 
 export interface ProofDialogProps {
   tree: MerkleSumTree;
@@ -105,14 +106,6 @@ export const ProofDialogContent = ({
     }
   }, [zkp, userHash]);
 
-  const openVerifierContract = () => {
-    window.open(
-      `https://sepolia.etherscan.io/address/${PROOF_OF_LIABILITIES_CONTRACT.address}`,
-      "_blank",
-      "noopener,noreferrer",
-    );
-  };
-
   return (
     <div className="text-sm flex gap-4 flex-col max-h-[50vh] overflow-y-auto">
       <KeyValueGrid>
@@ -121,20 +114,9 @@ export const ProofDialogContent = ({
           Username:
         </div>
         <CodeValue>{userData.username}</CodeValue>
-        <div>
-          <Tooltip>
-            <TooltipContent>
-              Private nonce value attributed to the user.
-            </TooltipContent>
-            <TooltipTrigger asChild>
-              <div className="flex gap-1 items-center">
-                <InfoIcon className="size-3" />
-                <span className="text-secondary-foreground/60">[private]</span>{" "}
-                Nonce:
-              </div>
-            </TooltipTrigger>
-          </Tooltip>
-        </div>
+        <InfoTooltip info="Private nonce value attributed to the user.">
+          <span className="text-secondary-foreground/60">[private]</span> Nonce:
+        </InfoTooltip>
         <CodeValue>{userData.nonce}</CodeValue>
         <div>
           <span className="text-secondary-foreground/60">[private]</span>{" "}
@@ -142,35 +124,14 @@ export const ProofDialogContent = ({
         </div>
         <CodeValue>{userData.balance.toString()}</CodeValue>
         <div className="mt-4">
-          <Tooltip>
-            <TooltipContent>
-              User identifier used in the circuit. Composed of the hash of the
-              username and nonce.
-            </TooltipContent>
-            <TooltipTrigger asChild>
-              <div className="flex gap-1 items-center">
-                <InfoIcon className="size-3" />
-                <span className="text-secondary-foreground/60">[private]</span>{" "}
-                ID:
-              </div>
-            </TooltipTrigger>
-          </Tooltip>
+          <InfoTooltip info="User identifier used in the circuit. Composed of the hash of the username and nonce.">
+            <span className="text-secondary-foreground/60">[private]</span> ID:
+          </InfoTooltip>
         </div>
         <CodeValue className="mt-4">{userId}</CodeValue>
-        <div>
-          <Tooltip>
-            <TooltipContent>
-              User hash public input. Composed of the hash of the ID and
-              balance.
-            </TooltipContent>
-            <TooltipTrigger asChild>
-              <div className="flex gap-1 items-center">
-                <InfoIcon className="size-3" />
-                <span>[public] Hash:</span>
-              </div>
-            </TooltipTrigger>
-          </Tooltip>
-        </div>
+        <InfoTooltip info="User hash public input. Composed of the hash of the ID and balance.">
+          [public] Hash:
+        </InfoTooltip>
         <CodeValue>{userHash}</CodeValue>
       </KeyValueGrid>
       <div className="flex gap-4 items-center">
@@ -201,19 +162,22 @@ export const ProofDialogContent = ({
       </div>
       <div className="flex gap-4 items-center">
         <div className="flex gap-1 items-center">
-          <Tooltip>
-            <TooltipContent>View verifier contract</TooltipContent>
-            <TooltipTrigger asChild>
-              <Button
-                onClick={openVerifierContract}
-                className="w-fit"
-                variant="ghost"
-                autoFocus={false}
+          <HybridTooltip>
+            <HybridTooltipContent>
+              <a
+                href={`https://sepolia.etherscan.io/address/${PROOF_OF_LIABILITIES_CONTRACT.address}`}
+                target="_blank"
+                rel="noopener noreferrer"
               >
+                View verifier contract
+              </a>
+            </HybridTooltipContent>
+            <HybridTooltipTrigger asChild>
+              <div className="p-2">
                 <InfoIcon className="size-4" />
-              </Button>
-            </TooltipTrigger>
-          </Tooltip>
+              </div>
+            </HybridTooltipTrigger>
+          </HybridTooltip>
           <Button
             disabled={zkp === undefined || verified !== undefined}
             className="w-fit"
