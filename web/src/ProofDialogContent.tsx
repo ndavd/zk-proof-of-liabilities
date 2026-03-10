@@ -148,8 +148,8 @@ export const ProofDialogContent = ({
         ) : (
           <>
             {zkp !== undefined ? (
-              <div>
-                ZKP:{" "}
+              <div className="flex gap-2 min-w-0">
+                <span>ZKP:</span>
                 <CodeValue copyValue={zkp}>
                   {zkp.slice(0, 30)}...{zkp.slice(-32)}
                 </CodeValue>
