@@ -175,6 +175,8 @@ The Nargo workspace is comprised of 2 crates:
 
 #### Use as library
 
+Add this library to your `Nargo.toml`:
+
 ```toml
 [dependencies]
 merkle_sum_tree = { tag = "v0.1.0", git = "https://github.com/ndavd/zk-proof-of-liabilities" }
