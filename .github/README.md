@@ -141,16 +141,16 @@ becomes for the CEX to manipulate the tree without being caught.
 The repository is organized as a monorepo composed of a Nargo workspace, Bun
 workspace, and Forge project.
 
-- `crates/`: Nargo workspace containing the `zk_proof_of_liabilities` binary
-  crate and the `merkle_sum_tree` library crate
-- `contracts/`: Forge project containing the `ProofOfLiabilities` contract and
-  the pre-generated `HonkVerifier`
-- `sdk/`: TypeScript package with Merkle Sum Tree building and proof input
-  generation utilities
-- `scripts/`: TypeScript helper scripts
-- `web/`: Demo application
-- `mock-data/`: Mock users data that is used across the app and to generate the
-  tests' inputs
+- [`crates/`](../crates/): Nargo workspace containing the
+  `zk_proof_of_liabilities` binary crate and the `merkle_sum_tree` library crate
+- [`contracts/`](../contracts/): Forge project containing the
+  `ProofOfLiabilities` contract and the pre-generated `HonkVerifier`
+- [`sdk/`](../sdk/): TypeScript package with Merkle Sum Tree building and proof
+  input generation utilities
+- [`scripts/`](../scripts/): TypeScript helper scripts
+- [`web/`](../web/): Demo application
+- [`mock-data/`](../mock-data/): Mock users data that is used across the app and
+  to generate the tests' inputs
 
 ## Getting started
 
@@ -169,9 +169,10 @@ All of the commands listed should be run from the root directory.
 
 The Nargo workspace is comprised of 2 crates:
 
-- The `zk_proof_of_liabilities` binary crate that provides sensible defaults
-- The `merkle_sum_tree` library crate that allows for customization and
-  integration into other circuits
+- The [`zk_proof_of_liabilities`](../crates/zk_proof_of_liabilities/) binary
+  crate that provides sensible defaults
+- The [`merkle_sum_tree`](../crates/merkle_sum_tree/) library crate that allows
+  for customization and integration into other circuits
 
 #### Use as library
 
@@ -192,7 +193,8 @@ nargo compile
 
 #### Execute the circuit
 
-Using the provided `Prover.toml`:
+Using the provided
+[`Prover.toml`](../crates/zk_proof_of_liabilities/Prover.toml):
 
 ```bash
 nargo execute
@@ -327,7 +329,8 @@ forge script contracts/script/DeployProofOfLiabilities.s.sol \
 
 #### Generate `Prover.toml`
 
-Create a CSV file with the users data. See `mock-data/users.csv` for reference.
+Create a CSV file with the users data. See
+[`mock-data/users.csv`](../mock-data/users.csv) for reference.
 
 ```bash
 bun run generate-prover-toml {PATH_TO_USER_DATA_CSV} {PROVING_USERNAME} > custom-prover.toml
